@@ -1,58 +1,49 @@
+import { program } from 'commander'
 import mysql2 from 'mysql2/promise'
-import { Faker } from '@faker-js/faker'
+import ForgeryKit from './forgerykit.js'
+import { Presets, SingleBar } from 'cli-progress'
 
-const connection = await mysql2.createConnection({
-	host     : '---HOST---',
-	user     : 'root',
-	password : '---PASSWORD---',
-	database : 'WeVoteDB'
+async function connect(options) {
+	const connection = await mysql2.createConnection({
+		host     : options.host,
+		user     : options.user,
+		password : options.pass,
+		database : options.db
+	})
+	console.log("Connected.")
+	return connection
+}
+
+async function times(n, run) {
+	const bar = new SingleBar({
+		barIncompleteChar: " ",
+		barCompleteChar: "=",
+		format: '[{bar}] {percentage}% | ETA: {eta}s | {value}/{total}'})
+	bar.start(n,0)
+	for (let i = 0; i < n; i++) {
+		await run(i)
+		bar.update(i+1)
+	}
+	bar.stop()
+}
+
+program
+	.requiredOption('--host <host>', 'database host (required)')
+	.requiredOption('--user <user>', 'database username (required)')
+	.requiredOption('--pass <pass>', 'database password (required)')
+	.requiredOption('--db <db>', 'database name (required)')
+	
+const create = program.command('create')
+create.command('cosmetics <amount>').action(async (amount) => {
+	
+	const kit = new ForgeryKit(await connect(program.opts()))
+	
+	console.log("Creating front cosmetics")
+	await times(amount, async()=>{
+		await kit.insertFrontCosmetic(10, 2000)
+	})
+
+	kit.end()
 })
 
-function randomID() {
-	const a = ["A", "B", "C", "D", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
-	const n = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]
-
-	function rng(array) {
-		return array[Math.floor(Math.random()*array.length)]
-	}
-
-	return `${rng(a)}${rng(a)}${rng(n)}${rng(a)}${rng(n)}${rng(a)}${rng(a)}`
-}
-
-const userIDs = []
-function insertFakeUser() {
-	const id = randomID() 
-	connection.execute(`--sql
-		INSERT INTO User (
-			UserID, 
-			Username, 
-			Email, 
-			Password, 
-			ProfileBio, 
-			Points, 
-			LifetimePoints, 
-			Streak, 
-			PredictionAccuracy, 
-			FrontDisplayed, 
-			MiddleDisplayed, 
-			BackDisplayed
-		) 
-		VALUES (
-			?, 
-			?, 
-			?, 
-			?, 
-			?, 
-			?, 
-			?, 
-			?, 
-			?, 
-			?,
-			?,
-			?
-		)`)
-}
-
-// await connection.execute(`--sql
-// 	DELETE FROM Cosmetic;
-// 	`)
+program.parse()
