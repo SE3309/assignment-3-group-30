@@ -1,0 +1,13 @@
+{
+  "name": "forgery",
+  "version": "1.0.0",
+  "description": "",
+  "main": "forgery.js",
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@faker-js/faker": "^9.2.0",
+    "mysql2": "^3.11.4"
+  },
+  "type": "module"
+}
