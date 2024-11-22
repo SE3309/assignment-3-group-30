@@ -14,7 +14,8 @@ async function connect(options) {
 	return connection
 }
 
-async function times(n, run) {
+async function times(times, run) {
+	const n = Math.floor(times)
 	const bar = new SingleBar({
 		barIncompleteChar: " ",
 		barCompleteChar: "=",
@@ -35,12 +36,37 @@ program
 	
 const create = program.command('create')
 create.command('cosmetics <amount>').action(async (amount) => {
-	
 	const kit = new ForgeryKit(await connect(program.opts()))
 	
-	console.log("Creating front cosmetics")
+	console.log("Creating front cosmetics...")
 	await times(amount, async()=>{
 		await kit.insertFrontCosmetic(10, 2000)
+	})
+	console.log("Creating middle cosmetics...")
+	await times(amount, async()=>{
+		await kit.insertMiddleCosmetic(10, 2000)
+	})
+	console.log("Creating back cosmetics.")
+	await times(amount, async()=>{
+		await kit.insertBackCosmetic(10, 2000)
+	})
+
+	kit.end()
+})
+create.command('users <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
+
+	let validCosmetics = await kit.getValidCosmetics()
+
+	if (validCosmetics.front.length === 0 || validCosmetics.middle.length === 0 || validCosmetics.back.length === 0) {
+		kit.end()
+		console.log("Not enough cosmetics. Create more first.")
+		return
+	}
+
+	console.log("Creating users.")
+	await times(amount, async()=>{
+		await kit.insertUser(validCosmetics)
 	})
 
 	kit.end()
