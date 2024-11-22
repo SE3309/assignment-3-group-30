@@ -87,6 +87,19 @@ export default class ForgeryKit {
 		await this.#connection.commit()
 	}
 
+	insertPoll() {
+		return this.#connection.execute(`-- sql
+			INSERT INTO Poll (Title, Description, OptionA, OptionB, CreationDate, ClosesAt)
+			VALUES (?, ?, ?, ?, NOW(), ?);
+			`, [faker.lorem.words(5)+"?", faker.lorem.words(10), faker.lorem.words(2), faker.lorem.words(2), faker.date.future()])
+	}
+	insertPollWithSuggester(userID) {
+		return this.#connection.execute(`-- sql
+			INSERT INTO Poll (Title, Description, OptionA, OptionB, CreationDate, ClosesAt, SuggestedBy)
+			VALUES (?, ?, ?, ?, NOW(), ?, ?);
+			`, [faker.lorem.words(5)+"?", faker.lorem.words(10), faker.lorem.words(2), faker.lorem.words(2), faker.date.future(), userID])
+	}
+
 	async getValidCosmetics() {
 		const front = this.#connection.execute({
 			sql:`-- sql

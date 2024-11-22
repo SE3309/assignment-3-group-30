@@ -111,5 +111,32 @@ create.command('purchases <amount>').action(async (amount)=>{
 
 	kit.end()
 })
+create.command('polls <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
 
+	console.log("Creating polls.")
+	await times(amount, async()=>{
+		await kit.insertPoll()
+	})
+
+	kit.end()
+})
+create.command('suggested-polls <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
+
+	let validUsers = await kit.getValidUserIDs()
+
+	if (validUsers.length < amount) {
+		kit.end()
+		console.log("Not enough users. Create more first.")
+		return
+	}
+
+	console.log("Creating suggested polls.")
+	await times(amount, async()=>{
+		await kit.insertPollWithSuggester(validUsers[Math.floor(Math.random() * validUsers.length)])
+	})
+
+	kit.end()
+})
 program.parse()
