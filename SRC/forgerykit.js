@@ -148,6 +148,34 @@ export default class ForgeryKit {
 			`, [faker.internet.email(), faker.internet.password()])
 	}
 
+	insertUserReport(validUsers, dismissed) {
+		const user = validUsers[Math.floor(validUsers.length * Math.random())]
+		const reporter = validUsers[Math.floor(validUsers.length * Math.random())]
+
+		return this.#connection.execute(`-- sql
+			INSERT INTO UserReport (Reason, Dismissed, ReportDate, ReportedUserID, ReporterID)
+			VALUES (?, ?, ?, ?, ?);
+			`, [faker.lorem.words(10), dismissed, faker.date.recent(), user, reporter])
+	}
+	insertCommentReport(validComments, validUsers, dismissed) {
+		const comment = validComments[Math.floor(validComments.length * Math.random())]
+		const reporter = validUsers[Math.floor(validUsers.length * Math.random())]
+
+		return this.#connection.execute(`-- sql
+			INSERT INTO CommentReport (Reason, Dismissed, ReportDate, ReportedCommentID, ReporterID)
+			VALUES (?, ?, ?, ?, ?);
+			`, [faker.lorem.words(10), dismissed, faker.date.recent(), comment, reporter])
+	}
+	insertReplyReport(validReplies, validUsers, dismissed) {
+		const reply = validReplies[Math.floor(validReplies.length * Math.random())]
+		const reporter = validUsers[Math.floor(validUsers.length * Math.random())]
+
+		return this.#connection.execute(`-- sql
+			INSERT INTO ReplyReport (Reason, Dismissed, ReportDate, ReportedReplyID, ReporterID)
+			VALUES (?, ?, ?, ?, ?);
+			`, [faker.lorem.words(10), dismissed, faker.date.recent(), reply, reporter])
+	}
+
 	async getValidCosmetics() {
 		const front = this.#connection.execute({
 			sql:`-- sql
@@ -195,6 +223,15 @@ export default class ForgeryKit {
 		return (await this.#connection.execute({
 			sql:`-- sql
 				SELECT CommentID FROM Comment;
+			`,
+			rowsAsArray: true
+		}))[0].flat()
+	}
+
+	async getValidReplyIDs() {
+		return (await this.#connection.execute({
+			sql:`-- sql
+				SELECT ReplyID FROM Reply;
 			`,
 			rowsAsArray: true
 		}))[0].flat()

@@ -232,4 +232,31 @@ create.command('admins <amount>').action(async (amount)=>{
 	kit.end()
 })
 
+create.command('reports <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
+
+	let validUsers = await kit.getValidUserIDs()
+	let validComments = await kit.getValidCommentIDs()
+	let validReplies = await kit.getValidReplyIDs()
+
+	if (validUsers.length === 0 || validComments.length === 0 || validReplies.length === 0) {
+		kit.end()
+		console.log("Not enough users or comments or replies. Create more first.")
+		return
+	}
+
+	console.log("Creating reports.")
+	await times(amount, async()=>{
+		if (Math.random() < 0.333) {
+			await kit.insertUserReport(validUsers, false)
+		} else if (Math.random() < 0.666) {
+			await kit.insertCommentReport(validComments, validUsers, false)
+		} else {
+			await kit.insertReplyReport(validReplies, validUsers, false)
+		}
+	})
+
+	kit.end()
+})
+
 program.parse()
