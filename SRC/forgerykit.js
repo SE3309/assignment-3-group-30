@@ -100,9 +100,8 @@ export default class ForgeryKit {
 			`, [faker.lorem.words(5)+"?", faker.lorem.words(10), faker.lorem.words(2), faker.lorem.words(2), faker.date.past(), faker.date.future(), userID])
 	}
 
-	insertSubmission(voteSplit, predictionSplit, validPolls, validUsers) {
+	insertSubmission(voteSplit, predictionSplit, poll, validUsers) {
 		const user = validUsers[Math.floor(validUsers.length * Math.random())]
-		const poll = validPolls[Math.floor(validPolls.length * Math.random())]
 
 		const vote = Math.random() < voteSplit
 		const prediction = Math.random() < predictionSplit
