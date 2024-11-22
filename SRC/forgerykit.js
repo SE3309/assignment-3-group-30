@@ -132,6 +132,22 @@ export default class ForgeryKit {
 			`, [faker.lorem.words({min: 10, max: 60}), pollClosed, faker.date.recent(), comment, user])
 	}
 
+	insertSuggestion(validUsers, dismissed) {
+		const user = validUsers[Math.floor(validUsers.length * Math.random())]
+
+		return this.#connection.execute(`-- sql
+			INSERT INTO Suggestion (Title, Description, OptionA, OptionB, Dismissed, SuggesterID)
+			VALUES (?, ?, ?, ?, ?, ?);
+			`, [faker.lorem.words(5)+"?", faker.lorem.words(10), faker.lorem.words(2), faker.lorem.words(2), dismissed, user])
+	}
+
+	insertAdmin() {
+		return this.#connection.execute(`-- sql
+			INSERT INTO Admin (Email, Password)
+			VALUES (?, ?);
+			`, [faker.internet.email(), faker.internet.password()])
+	}
+
 	async getValidCosmetics() {
 		const front = this.#connection.execute({
 			sql:`-- sql

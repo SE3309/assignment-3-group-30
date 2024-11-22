@@ -202,4 +202,34 @@ create.command('replies <amount>').action(async (amount)=>{
 	kit.end()
 })
 
+create.command('suggestions <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
+
+	let validUsers = await kit.getValidUserIDs()
+
+	if (validUsers.length === 0) {
+		kit.end()
+		console.log("Not enough users. Create more first.")
+		return
+	}
+
+	console.log("Creating suggestions.")
+	await times(amount, async()=>{
+		await kit.insertSuggestion(validUsers, false)
+	})
+
+	kit.end()
+})
+
+create.command('admins <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
+
+	console.log("Creating admins.")
+	await times(amount, async()=>{
+		await kit.insertAdmin()
+	})
+
+	kit.end()
+})
+
 program.parse()
