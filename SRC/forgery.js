@@ -162,4 +162,44 @@ create.command('submissions <amount>').action(async (amount)=>{
 	kit.end()
 })
 
+create.command('comments <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
+
+	let validUsers = await kit.getValidUserIDs()
+	let validPolls = await kit.getValidPollIDs()
+
+	if (validUsers.length < amount) {
+		kit.end()
+		console.log("Not enough users. Create more first.")
+		return
+	}
+
+	console.log("Creating comments.")
+	await times(amount, async()=>{
+		await kit.insertComment(validUsers, validPolls, false)
+	})
+
+	kit.end()
+})
+
+create.command('replies <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
+
+	let validUsers = await kit.getValidUserIDs()
+	let validComments = await kit.getValidCommentIDs()
+
+	if (validUsers.length === 0 || validComments.length === 0) {
+		kit.end()
+		console.log("Not enough users or comments. Create more first.")
+		return
+	}
+
+	console.log("Creating replies.")
+	await times(amount, async()=>{
+		await kit.insertReply(validUsers, validComments, false)
+	})
+
+	kit.end()
+})
+
 program.parse()

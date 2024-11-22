@@ -113,6 +113,25 @@ export default class ForgeryKit {
 			`, [vote, prediction, faker.date.recent(), poll, user])
 	}
 
+	insertComment(validUsers, validPolls, pollClosed) {
+		const user = validUsers[Math.floor(validUsers.length * Math.random())]
+		const poll = validPolls[Math.floor(validPolls.length * Math.random())]
+
+		return this.#connection.execute(`-- sql
+			INSERT INTO Comment (Content, PollClosedAtPost, PollID, UserID, CommentTimeSubmitted)
+			VALUES (?, ?, ?, ?, ?);
+			`, [faker.lorem.words({min: 10, max: 60}), pollClosed, poll, user, faker.date.recent()])
+	}
+	insertReply(validUsers, validComments, pollClosed) {
+		const user = validUsers[Math.floor(validUsers.length * Math.random())]
+		const comment = validComments[Math.floor(validComments.length * Math.random())]
+
+		return this.#connection.execute(`-- sql
+			INSERT INTO Reply (Content, PollClosedAtPost, CommentTimeSubmitted, ReplyTo, UserID)
+			VALUES (?, ?, ?, ?, ?);
+			`, [faker.lorem.words({min: 10, max: 60}), pollClosed, faker.date.recent(), comment, user])
+	}
+
 	async getValidCosmetics() {
 		const front = this.#connection.execute({
 			sql:`-- sql
@@ -151,6 +170,15 @@ export default class ForgeryKit {
 		return (await this.#connection.execute({
 			sql:`-- sql
 				SELECT PollID FROM Poll;
+			`,
+			rowsAsArray: true
+		}))[0].flat()
+	}
+
+	async getValidCommentIDs() {
+		return (await this.#connection.execute({
+			sql:`-- sql
+				SELECT CommentID FROM Comment;
 			`,
 			rowsAsArray: true
 		}))[0].flat()
