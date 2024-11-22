@@ -90,14 +90,14 @@ export default class ForgeryKit {
 	insertPoll() {
 		return this.#connection.execute(`-- sql
 			INSERT INTO Poll (Title, Description, OptionA, OptionB, CreationDate, ClosesAt)
-			VALUES (?, ?, ?, ?, NOW(), ?);
-			`, [faker.lorem.words(5)+"?", faker.lorem.words(10), faker.lorem.words(2), faker.lorem.words(2), faker.date.future()])
+			VALUES (?, ?, ?, ?, ?, ?);
+			`, [faker.lorem.words(5)+"?", faker.lorem.words(10), faker.lorem.words(2), faker.lorem.words(2), faker.date.past(), faker.date.future()])
 	}
 	insertPollWithSuggester(userID) {
 		return this.#connection.execute(`-- sql
 			INSERT INTO Poll (Title, Description, OptionA, OptionB, CreationDate, ClosesAt, SuggestedBy)
-			VALUES (?, ?, ?, ?, NOW(), ?, ?);
-			`, [faker.lorem.words(5)+"?", faker.lorem.words(10), faker.lorem.words(2), faker.lorem.words(2), faker.date.future(), userID])
+			VALUES (?, ?, ?, ?, ?, ?, ?);
+			`, [faker.lorem.words(5)+"?", faker.lorem.words(10), faker.lorem.words(2), faker.lorem.words(2), faker.date.past(), faker.date.future(), userID])
 	}
 
 	async getValidCosmetics() {
@@ -129,6 +129,15 @@ export default class ForgeryKit {
 		return (await this.#connection.execute({
 			sql:`-- sql
 				SELECT UserID FROM User;
+			`,
+			rowsAsArray: true
+		}))[0].flat()
+	}
+
+	async getValidPollIDs() {
+		return (await this.#connection.execute({
+			sql:`-- sql
+				SELECT PollID FROM Poll;
 			`,
 			rowsAsArray: true
 		}))[0].flat()
