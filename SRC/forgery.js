@@ -23,8 +23,9 @@ async function times(times, run) {
 	bar.start(n,0)
 	for (let i = 0; i < n; i++) {
 		await run(i)
-		bar.update(i+1)
+		bar.update(i)
 	}
+	bar.update(n)
 	bar.stop()
 }
 
@@ -67,6 +68,45 @@ create.command('users <amount>').action(async (amount)=>{
 	console.log("Creating users.")
 	await times(amount, async()=>{
 		await kit.insertUser(validCosmetics)
+	})
+
+	kit.end()
+})
+
+create.command('purchases <amount>').action(async (amount)=>{
+	const kit = new ForgeryKit(await connect(program.opts()))
+
+	let validCosmetics = await kit.getValidCosmetics()
+
+	if (validCosmetics.front.length === 0 || validCosmetics.middle.length === 0 || validCosmetics.back.length === 0) {
+		kit.end()
+		console.log("Not enough cosmetics. Create more first.")
+		return
+	}
+
+	let validUsers = await kit.getValidUserIDs()
+
+	if (validUsers.length < amount) {
+		kit.end()
+		console.log("Not enough users. Create more first.")
+		return
+	}
+
+	console.log("Creating purchases.")
+	await times(amount, async()=>{
+		const user = validUsers[Math.floor(Math.random() * validUsers.length)]
+
+		if (Math.random() < 0.333) {
+			const cosmetic = validCosmetics.front[Math.floor(validCosmetics.front.length * Math.random())]
+			await kit.insertFrontCosmeticPurchase(user, cosmetic)
+		} else if (Math.random() < 0.666) {
+			const cosmetic = validCosmetics.middle[Math.floor(validCosmetics.middle.length * Math.random())]
+			await kit.insertMiddleCosmeticPurchase(user, cosmetic)
+		} else {
+			const cosmetic = validCosmetics.back[Math.floor(validCosmetics.back.length * Math.random())]
+			await kit.insertBackCosmeticPurchase(user, cosmetic)
+		}
+
 	})
 
 	kit.end()
